@@ -1,5 +1,7 @@
 #!/bin/bash
 
+##### EDIT BELOW ######
+
 PIDS="pids"
 LOGS="logs"
 
@@ -7,6 +9,11 @@ NAMES[0]="web"
 CMDS[0]="node server.js 8001"
 NAMES[1]="web2"
 CMDS[1]="node server.js 8002"
+
+
+
+
+##### DON'T TOUCH BELOW #####
 APP=$2
 
 case "$1" in
@@ -67,11 +74,11 @@ case "$1" in
 		;;
 	*)
 		echo "usage:"
-		echo "moncmd start [appname]"
-		echo "moncmd restart [appname]"
-		echo "moncmd status"
-		echo "moncmd log [appname]"
-		echo "moncmd logf [appname]"
+		echo "monapp start [appname]"
+		echo "monapp restart [appname]"
+		echo "monapp status"
+		echo "monapp log [appname]"
+		echo "monapp logf [appname]"
 		;;
 esac
 
