@@ -1,10 +1,11 @@
-#Moncmd
+#monapp
 
-moncmd is a wrapper for mon
+monapp is a wrapper for mon
 
 ##Usage
 
-	moncmd start
-	moncmd status
-	moncmd restart
+	monapp start
+	monapp status
+	monapp restart [process]
+	monapp log [process]
 
