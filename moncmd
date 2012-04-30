@@ -1,0 +1,48 @@
+#!/bin/bash
+
+PIDS="pids"
+LOGS="logs"
+
+NAMES[0]="web"
+CMDS[0]="node server.js 8001"
+NAMES[1]="web2"
+CMDS[1]="node server.js 8002"
+APP=$2
+
+case "$1" in
+	start)
+		for i in ${!NAMES[@]}
+		do
+			if [ -z "$APP" -o "$APP" == ${NAMES[i]} ]; then
+				echo "starting ${NAMES[i]} (${CMDS[i]})"
+				mon -d -p $PIDS/${NAMES[i]}.pid -l $LOGS/${NAMES[i]}.log "${CMDS[i]}"
+				#TODO: write out mon pid for stop command
+			fi
+		done
+		;;
+	status)
+		for i in ${!NAMES[@]}
+		do
+			echo ${NAMES[i]} `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
+		done
+		;;
+	restart)
+		for i in ${!NAMES[@]}
+		do
+			if [ -z "$APP" -o "$APP" == ${NAMES[i]} ]; then
+				echo "restarting ${NAMES[i]}"
+				kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid)
+			fi
+		done
+		;;
+	stop)
+		echo "not implemented yet"
+		;;
+	*)
+		echo "usage:"
+		echo "moncmd start [appname]"
+		echo "moncmd restart [appname]"
+		echo "moncmd status"
+		;;
+esac
+
