@@ -38,6 +38,33 @@ case "$1" in
 	stop)
 		echo "not implemented yet"
 		;;
+	log)
+		if [ -z "$APP" ]; then
+			echo "please pass in name of app"
+		else
+			for i in ${!NAMES[@]}
+			do
+				if [ "$APP" == ${NAMES[i]} ]; then
+					echo "Log for ${NAMES[i]}"
+					tail $LOGS/${NAMES[i]}.log
+				fi
+			done
+		fi
+		;;
+	#TODO: optimize
+	logf)
+		if [ -z "$APP" ]; then
+			echo "please pass in name of app"
+		else
+			for i in ${!NAMES[@]}
+			do
+				if [ "$APP" == ${NAMES[i]} ]; then
+					echo "Log for ${NAMES[i]}"
+					tail -f $LOGS/${NAMES[i]}.log
+				fi
+			done
+		fi
+		;;
 	*)
 		echo "usage:"
 		echo "moncmd start [appname]"
