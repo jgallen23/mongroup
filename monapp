@@ -70,6 +70,8 @@ case "$1" in
 		echo "moncmd start [appname]"
 		echo "moncmd restart [appname]"
 		echo "moncmd status"
+		echo "moncmd log [appname]"
+		echo "moncmd logf [appname]"
 		;;
 esac
 
