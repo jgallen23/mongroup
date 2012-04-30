@@ -1,6 +1,6 @@
 #monapp
 
-monapp is a wrapper for mon
+monapp is a wrapper for [mon](https://github.com/visionmedia/mon/)
 
 ##Usage
 
@@ -8,4 +8,5 @@ monapp is a wrapper for mon
 	monapp status
 	monapp restart [process]
 	monapp log [process]
+	monapp logf [process]
 
