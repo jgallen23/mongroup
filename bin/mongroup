@@ -24,6 +24,7 @@ usage() {
     status               shows the status of all running apps 
     log <app>            tail the log of an app
     logf <app>           tail -f the log of an app
+    update               update mongroup to the latest version
 EOF
 }
 
@@ -127,6 +128,18 @@ tail_log() {
   fi
 }
 
+update() {
+  echo "updating mongroup(1)"
+  rm -fr /tmp/mongroup
+  git clone git://github.com/jgallen23/mongroup.git \
+    --depth 0 \
+    /tmp/mongroup \
+    &> /tmp/mongroup.log \
+  && cd /tmp/mongroup \
+  && make install \
+  && echo "updated $VERSION -> `mongroup --version`"
+}
+
 while test $# -ne 0; do
   arg=$1
   shift
@@ -161,6 +174,10 @@ while test $# -ne 0; do
       ;;
     log|logf)
       tail_log $arg $1
+      exit
+      ;;
+    update)
+      update
       exit
       ;;
   esac
