@@ -2,6 +2,10 @@
 
 mongroup is a wrapper for [mon](https://github.com/visionmedia/mon/).  It allows you to create easily monitor a group of processes.
 
+##Installation
+
+	make install
+
 ##Config File
 A config file lets you define what process you want to run in your mongroup.  It also lets you set the directories for where your pids and logs are stored.  Here is an example config file:
 
@@ -29,4 +33,4 @@ A config file lets you define what process you want to run in your mongroup.  It
 		status               shows the status of all running apps 
 		log <app>            tail the log of an app
 		logf <app>           tail -f the log of an app
-
+		update               update mongroup to the latest version
