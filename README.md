@@ -13,11 +13,11 @@ A config file lets you define what process you want to run in your mongroup.  It
 
 ##Usage
 
-	Usage: monapp [options] [command]
+	Usage: mongroup [options] [command]
 
 	Options:
 
-		-c, --config <path>  set config path. defaults to ./monapp.conf
+		-c, --config <path>  set config path. defaults to ./mongroup.conf
 		-V, --version        output program version
 		-h, --help           output help information
 
