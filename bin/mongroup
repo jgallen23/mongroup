@@ -1,0 +1,161 @@
+#!/bin/bash
+
+VERSION="0.0.1"
+CONFIG=./mongroup.conf
+PIDS=./pids
+LOGS=./logs
+
+usage() {
+  cat <<-EOF
+
+  Usage: mongroup [options] [command]
+
+  Options:
+
+    -c, --config <path>  set config path. defaults to ./mongroup.conf
+    -V, --version        output program version
+    -h, --help           output help information
+
+  Commands:
+
+    start <app>          start all or a sepcific app 
+    restart <app>        restart all or specfic app 
+    stop                 not implemented yet 
+    status               shows the status of all running apps 
+    log <app>            tail the log of an app
+    logf <app>           tail -f the log of an app
+EOF
+}
+
+abort() {
+  echo
+  echo "  $@" 1>&2
+  echo
+  exit 1
+}
+
+version() {
+  echo $VERSION
+}
+
+read_config() {
+  i=0
+  while read line; do
+  if [[ "$line" =~ ^[^#]*= ]]; then
+    n=${line%% =*}
+    v=${line##*= }
+    if [[ "$n" == "pids" ]]; then
+      PIDS=$v
+    elif [[ "$n" == "logs" ]]; then
+      LOGS=$v
+    else
+      NAMES[i]=$n
+      CMDS[i]=$v
+    fi
+    ((i++))
+  fi
+  done < $CONFIG 
+}
+
+set_config() {
+  test -f $1 || abort invalid --config path
+  CONFIG=$1
+}
+
+
+start() {
+  read_config
+  local app=$1
+  for i in ${!NAMES[@]}
+  do
+    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
+      echo "starting ${NAMES[i]} (${CMDS[i]})"
+      mon -d -p $PIDS/${NAMES[i]}.pid -l $LOGS/${NAMES[i]}.log "${CMDS[i]}"
+      #TODO: write out mon pid for stop command
+    fi
+  done
+}
+
+status() {
+  read_config
+  for i in ${!NAMES[@]}
+  do
+    echo ${NAMES[i]} `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
+  done
+}
+
+restart() {
+  read_config
+  local app=$1
+  for i in ${!NAMES[@]}
+  do
+    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
+      echo "restarting ${NAMES[i]}"
+      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid)
+    fi
+  done
+}
+
+stop() {
+  echo "not implemented yet"
+}
+
+tail_log() {
+  read_config
+  local app=$2
+  local arg=$1
+  if [ -z "$app" ]; then
+    echo "please pass in name of app"
+  else
+    for i in ${!NAMES[@]}
+    do
+      if [ "$app" == ${NAMES[i]} ]; then
+        echo "Log for ${NAMES[i]}"
+        if [ "$arg" == "logf" ]; then
+          tail -f $LOGS/${NAMES[i]}.log
+        else
+          tail $LOGS/${NAMES[i]}.log
+        fi
+      fi
+    done
+  fi
+}
+
+while test $# -ne 0; do
+  arg=$1
+  shift
+  case $arg in
+    -h|--help)
+      usage
+      exit 
+      ;;
+    -V|--version)
+      version
+      exit
+      ;;
+    -c|--config)
+      set_config $1
+      shift
+      ;;
+    start)
+      start $1
+      exit
+      ;;
+    status)
+      status
+      exit
+      ;;
+    restart)
+      restart $1
+      exit
+      ;;
+    stop)
+      stop $1
+      exit
+      ;;
+    log|logf)
+      tail_log $arg $1
+      exit
+      ;;
+  esac
+done
