@@ -55,6 +55,12 @@ read_config() {
     ((i++))
   fi
   done < $CONFIG 
+  if [ ! -d $PIDS ]; then
+    abort pid directory doesn\'t exist
+  fi
+  if [ ! -d $LOGS ]; then
+    abort logs directory doesn\'t exist
+  fi
 }
 
 set_config() {
