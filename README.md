@@ -27,10 +27,10 @@ A config file lets you define what process you want to run in your mongroup.  It
 
 	Commands:
 
-		start <app>          start all or a sepcific app 
-		restart <app>        restart all or specfic app 
+		start [app]          start [app] or all apps
+		restart [app]        restart [app] or all apps
 		stop                 not implemented yet 
 		status               shows the status of all running apps 
-		log <app>            tail the log of an app
-		logf <app>           tail -f the log of an app
+		log [app]            tail the [app]'s log or all apps 
+		logf [app]           tail -f the [app]'s log or all apps 
 		update               update mongroup to the latest version
