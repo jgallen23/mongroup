@@ -52,8 +52,8 @@ read_config() {
     else
       NAMES[i]=$n
       CMDS[i]=$v
+      ((i++))
     fi
-    ((i++))
   fi
   done < $CONFIG 
   if [ ! -d $PIDS ]; then
@@ -111,21 +111,19 @@ tail_log() {
   read_config
   local app=$2
   local arg=$1
-  if [ -z "$app" ]; then
-    echo "please pass in name of app"
-  else
-    for i in ${!NAMES[@]}
-    do
-      if [ "$app" == ${NAMES[i]} ]; then
-        echo "Log for ${NAMES[i]}"
-        if [ "$arg" == "logf" ]; then
-          tail -f $LOGS/${NAMES[i]}.log
-        else
-          tail $LOGS/${NAMES[i]}.log
-        fi
-      fi
-    done
+  local log_files=
+  local follow=
+
+  for i in ${!NAMES[@]}
+  do
+    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
+      log_files[i]="$LOGS/${NAMES[i]}.log"
+    fi
+  done
+  if [[ "$arg" == "logf" ]]; then
+    follow="-f"
   fi
+  tail -n 30 $follow ${log_files[@]}
 }
 
 update() {
