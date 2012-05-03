@@ -20,7 +20,7 @@ usage() {
 
     start [app]          start [app] or all apps
     restart [app]        restart [app] or all apps
-    stop                 not implemented yet 
+    stop [app]           stops [app] or all apps 
     status               shows the status of all running apps 
     log [app]            tail the [app]'s log or all apps 
     logf [app]           tail -f the [app]'s log or all apps 
@@ -77,8 +77,7 @@ start() {
   do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
       echo "starting ${NAMES[i]} (${CMDS[i]})"
-      mon -d -p $PIDS/${NAMES[i]}.pid -l $LOGS/${NAMES[i]}.log "${CMDS[i]}"
-      #TODO: write out mon pid for stop command
+      mon -d -p $PIDS/${NAMES[i]}.pid -m $PIDS/${NAMES[i]}.mon.pid -l $LOGS/${NAMES[i]}.log "${CMDS[i]}"
     fi
   done
 }
@@ -104,7 +103,15 @@ restart() {
 }
 
 stop() {
-  echo "not implemented yet"
+  read_config
+  local app=$1
+  for i in ${!NAMES[@]}
+  do
+    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
+      echo "stopping ${NAMES[i]}"
+      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.mon.pid)
+    fi
+  done
 }
 
 tail_log() {
