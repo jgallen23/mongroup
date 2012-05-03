@@ -29,7 +29,7 @@ A config file lets you define what process you want to run in your mongroup.  It
 
 		start [app]          start [app] or all apps
 		restart [app]        restart [app] or all apps
-		stop                 not implemented yet 
+		stop [app]           stops [app] or all apps 
 		status               shows the status of all running apps 
 		log [app]            tail the [app]'s log or all apps 
 		logf [app]           tail -f the [app]'s log or all apps 
