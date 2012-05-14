@@ -24,6 +24,8 @@ usage() {
     status               shows the status of all running apps 
     log [app]            tail the [app]'s log or all apps 
     logf [app]           tail -f the [app]'s log or all apps 
+    tail [app]           same as logf 
+    less [app]           runs the log files through less
     update               update mongroup to the latest version
 EOF
 }
@@ -127,10 +129,14 @@ tail_log() {
       log_files[i]="$LOGS/${NAMES[i]}.log"
     fi
   done
-  if [[ "$arg" == "logf" ]]; then
-    follow="-f"
+  if [[ "$arg" == "less" ]]; then
+    less ${log_files[@]}
+  else
+    if [ "$arg" == "logf" -o "$arg" == "tail" ]; then
+      follow="-f"
+    fi
+    tail -n 30 $follow ${log_files[@]}
   fi
-  tail -n 30 $follow ${log_files[@]}
 }
 
 update() {
@@ -177,7 +183,7 @@ while test $# -ne 0; do
       stop $1
       exit
       ;;
-    log|logf)
+    log|logf|less|tail)
       tail_log $arg $1
       exit
       ;;
