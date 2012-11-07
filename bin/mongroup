@@ -72,10 +72,10 @@ read_config() {
   fi
   done < $CONFIG 
   if [ ! -d $PIDS ]; then
-    abort pid directory doesn\'t exist
+    abort $PIDS directory doesn\'t exist
   fi
   if [ ! -d $LOGS ]; then
-    abort logs directory doesn\'t exist
+    abort $LOGS directory doesn\'t exist
   fi
 }
 
@@ -95,16 +95,17 @@ set_config() {
 start() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}
-  do
+  echo
+  for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "starting ${NAMES[i]} (${CMDS[i]})"
+      echo "  starting ${NAMES[i]} (${CMDS[i]})"
       mon -d -p $PIDS/${NAMES[i]}.pid \
         -m $PIDS/${NAMES[i]}.mon.pid \
         -l $LOGS/${NAMES[i]}.log \
         "${CMDS[i]}"
     fi
   done
+  echo
 }
 
 #
@@ -113,8 +114,7 @@ start() {
 
 status() {
   read_config
-  for i in ${!NAMES[@]}
-  do
+  for i in ${!NAMES[@]}; do
     echo ${NAMES[i]} `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
   done
 }
@@ -126,13 +126,14 @@ status() {
 restart() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}
-  do
+  echo
+  for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "restarting ${NAMES[i]}"
+      echo "  restarting ${NAMES[i]}"
       kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid)
     fi
   done
+  echo
 }
 
 #
@@ -142,13 +143,14 @@ restart() {
 stop() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}
-  do
+  echo
+  for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "stopping ${NAMES[i]}"
+      echo "  stopping ${NAMES[i]}"
       kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.mon.pid)
     fi
   done
+  echo
 }
 
 #
