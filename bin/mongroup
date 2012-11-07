@@ -128,7 +128,7 @@ status() {
   for i in ${!NAMES[@]}; do
     local name=${NAMES[i]}
     printf "  %10s : " $name
-    echo `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
+    echo `mon --pidfile $PIDS/$name.pid --status`
   done
   echo
 }
@@ -142,9 +142,10 @@ restart() {
   local app=$1
   echo
   for i in ${!NAMES[@]}; do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "  restarting ${NAMES[i]}"
-      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid) 2> /dev/null
+    local name=${NAMES[i]}
+    if [ -z "$app" -o "$app" == "$name" ]; then
+      echo "  restarting $name"
+      kill -s SIGTERM $(cat $PIDS/$name.pid) 2> /dev/null
     fi
   done
   echo
