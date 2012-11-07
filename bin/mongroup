@@ -214,6 +214,13 @@ update() {
     && echo "updated $VERSION -> `mongroup --version`"
 }
 
+# default to status
+
+if [ $# -eq 0 ]; then
+  status
+  exit
+fi
+
 #
 # Parse argv.
 #
