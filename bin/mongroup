@@ -42,15 +42,6 @@ abort() {
 }
 
 #
-# Output version and exit.
-#
-
-version() {
-  echo $VERSION
-  exit
-}
-
-#
 # Read configuration file.
 #
 
@@ -213,7 +204,7 @@ while test $# -ne 0; do
       exit 
       ;;
     -V|--version)
-      version
+      echo $VERSION
       exit
       ;;
     -c|--config)
