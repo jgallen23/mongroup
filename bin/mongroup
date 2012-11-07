@@ -134,7 +134,7 @@ restart() {
   for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
       echo "  restarting ${NAMES[i]}"
-      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid)
+      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid) 2> /dev/null
     fi
   done
   echo
@@ -151,7 +151,7 @@ stop() {
   for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
       echo "  stopping ${NAMES[i]}"
-      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.mon.pid)
+      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.mon.pid) 2> /dev/null
     fi
   done
   echo
