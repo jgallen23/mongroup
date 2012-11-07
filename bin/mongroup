@@ -160,9 +160,10 @@ stop() {
   local app=$1
   echo
   for i in ${!NAMES[@]}; do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "  stopping ${NAMES[i]}"
-      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.mon.pid) 2> /dev/null
+    local name=${NAMES[i]}
+    if [ -z "$app" -o "$app" == "$name" ]; then
+      echo "  stopping $name"
+      kill -s SIGTERM $(cat $PIDS/$name.mon.pid) 2> /dev/null
     fi
   done
   echo
