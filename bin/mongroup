@@ -98,7 +98,7 @@ start() {
   echo
   for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "  starting ${NAMES[i]} (${CMDS[i]})"
+      echo "  starting ${NAMES[i]} : ${CMDS[i]}"
       mon -d -p $PIDS/${NAMES[i]}.pid \
         -m $PIDS/${NAMES[i]}.mon.pid \
         -l $LOGS/${NAMES[i]}.log \
@@ -114,9 +114,13 @@ start() {
 
 status() {
   read_config
+  echo
   for i in ${!NAMES[@]}; do
-    echo ${NAMES[i]} `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
+    local name=${NAMES[i]}
+    printf "  %10s : " $name
+    echo `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
   done
+  echo
 }
 
 #
