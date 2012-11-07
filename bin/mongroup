@@ -30,6 +30,10 @@ usage() {
 EOF
 }
 
+#
+# Abort with <msg ...>
+#
+
 abort() {
   echo
   echo "  $@" 1>&2
@@ -37,9 +41,18 @@ abort() {
   exit 1
 }
 
+#
+# Output version and exit.
+#
+
 version() {
   echo $VERSION
+  exit
 }
+
+#
+# Read configuration file.
+#
 
 read_config() {
   i=0
@@ -66,11 +79,18 @@ read_config() {
   fi
 }
 
+#
+# Set config <file>
+#
+
 set_config() {
   test -f $1 || abort invalid --config path
   CONFIG=$1
 }
 
+#
+# Start processes.
+#
 
 start() {
   read_config
@@ -79,10 +99,17 @@ start() {
   do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
       echo "starting ${NAMES[i]} (${CMDS[i]})"
-      mon -d -p $PIDS/${NAMES[i]}.pid -m $PIDS/${NAMES[i]}.mon.pid -l $LOGS/${NAMES[i]}.log "${CMDS[i]}"
+      mon -d -p $PIDS/${NAMES[i]}.pid \
+        -m $PIDS/${NAMES[i]}.mon.pid \
+        -l $LOGS/${NAMES[i]}.log \
+        "${CMDS[i]}"
     fi
   done
 }
+
+#
+# Check status.
+#
 
 status() {
   read_config
@@ -91,6 +118,10 @@ status() {
     echo ${NAMES[i]} `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
   done
 }
+
+#
+# Restart processes.
+#
 
 restart() {
   read_config
@@ -104,6 +135,10 @@ restart() {
   done
 }
 
+#
+# Stop processes.
+#
+
 stop() {
   read_config
   local app=$1
@@ -115,6 +150,10 @@ stop() {
     fi
   done
 }
+
+#
+# Tail logs.
+#
 
 tail_log() {
   read_config
@@ -139,17 +178,25 @@ tail_log() {
   fi
 }
 
+#
+# Update mongroup(1)
+#
+
 update() {
   echo "updating mongroup(1)"
   rm -fr /tmp/mongroup
   git clone git://github.com/jgallen23/mongroup.git \
-    --depth 0 \
-    /tmp/mongroup \
-    &> /tmp/mongroup.log \
-  && cd /tmp/mongroup \
-  && make install \
-  && echo "updated $VERSION -> `mongroup --version`"
+      --depth 0 \
+      /tmp/mongroup \
+      &> /tmp/mongroup.log \
+    && cd /tmp/mongroup \
+    && make install \
+    && echo "updated $VERSION -> `mongroup --version`"
 }
+
+#
+# Parse argv.
+#
 
 while test $# -ne 0; do
   arg=$1
