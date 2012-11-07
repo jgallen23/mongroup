@@ -5,6 +5,10 @@ CONFIG=./mongroup.conf
 PIDS=./pids
 LOGS=./logs
 
+#
+# Output usage.
+#
+
 usage() {
   cat <<-EOF
 
@@ -28,6 +32,14 @@ usage() {
     less [app]           runs the log files through less
     update               update mongroup to the latest version
 EOF
+}
+
+#
+# Check if <pid> is alive.
+#
+
+alive() {
+  kill -0 $1 2> /dev/null
 }
 
 #
@@ -89,11 +101,17 @@ start() {
   echo
   for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "  starting ${NAMES[i]} : ${CMDS[i]}"
-      mon -d -p $PIDS/${NAMES[i]}.pid \
-        -m $PIDS/${NAMES[i]}.mon.pid \
-        -l $LOGS/${NAMES[i]}.log \
-        "${CMDS[i]}"
+      local pid=$(cat $PIDS/${NAMES[i]}.pid)
+      alive $pid
+      if [ $? -eq 0 ]; then
+        echo "  running ${NAMES[i]}"
+      else
+        echo "  starting ${NAMES[i]}"
+        mon -d -p $PIDS/${NAMES[i]}.pid \
+          -m $PIDS/${NAMES[i]}.mon.pid \
+          -l $LOGS/${NAMES[i]}.log \
+          "${CMDS[i]}"
+      fi
     fi
   done
   echo
