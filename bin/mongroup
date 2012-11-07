@@ -100,16 +100,17 @@ start() {
   local app=$1
   echo
   for i in ${!NAMES[@]}; do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      local pid=$(cat $PIDS/${NAMES[i]}.pid)
+    local name=${NAMES[i]}
+    if [ -z "$app" -o "$app" == "$name" ]; then
+      local pid=$(cat $PIDS/$name.pid)
       alive $pid
       if [ $? -eq 0 ]; then
-        echo "  running ${NAMES[i]}"
+        echo "  running $name"
       else
-        echo "  starting ${NAMES[i]}"
-        mon -d -p $PIDS/${NAMES[i]}.pid \
-          -m $PIDS/${NAMES[i]}.mon.pid \
-          -l $LOGS/${NAMES[i]}.log \
+        echo "  starting $name"
+        mon -d -p $PIDS/$name.pid \
+          -m $PIDS/$name.mon.pid \
+          -l $LOGS/$name.log \
           "${CMDS[i]}"
       fi
     fi
