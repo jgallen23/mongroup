@@ -74,9 +74,11 @@ read_config() {
     fi
   fi
   done < $CONFIG 
+
   if [ ! -d $PIDS ]; then
     abort $PIDS directory doesn\'t exist
   fi
+
   if [ ! -d $LOGS ]; then
     abort $LOGS directory doesn\'t exist
   fi
