@@ -98,7 +98,7 @@ set_config() {
 #
 
 start_proc() {
-  echo "  starting $1"
+  printf "  \e[36m%10s\e[m : %s\n" "start" $name
   mon -d -p $PIDS/$1.pid \
     -m $PIDS/$1.mon.pid \
     -l $LOGS/$1.log \
@@ -121,7 +121,7 @@ start() {
         local pid=$(cat $pidfile)
         alive $pid
         if [ $? -eq 0 ]; then
-          echo "  running $name"
+          printf "  \e[36m%10s\e[m : %s\n" "running" $name
         else
           start_proc $name "${CMDS[i]}"
         fi
@@ -182,7 +182,7 @@ stop() {
   for i in ${!NAMES[@]}; do
     local name=${NAMES[i]}
     if [ -z "$app" -o "$app" == "$name" ]; then
-      echo "  stopping $name"
+      printf "  \e[36m%10s\e[m : %s\n" "stop" $name
       kill -s SIGTERM $(cat $PIDS/$name.mon.pid) 2> /dev/null
     fi
   done
