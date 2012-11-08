@@ -94,6 +94,18 @@ set_config() {
 }
 
 #
+# Start proc <name> with <cmd>
+#
+
+start_proc() {
+  echo "  starting $1"
+  mon -d -p $PIDS/$1.pid \
+    -m $PIDS/$1.mon.pid \
+    -l $LOGS/$1.log \
+    "$2"
+}
+
+#
 # Start processes.
 #
 
@@ -103,17 +115,18 @@ start() {
   echo
   for i in ${!NAMES[@]}; do
     local name=${NAMES[i]}
+    local pidfile=$PIDS/$name.pid
     if [ -z "$app" -o "$app" == "$name" ]; then
-      local pid=$(cat $PIDS/$name.pid)
-      alive $pid
-      if [ $? -eq 0 ]; then
-        echo "  running $name"
+      if [ -f $pidfile ]; then
+        local pid=$(cat $pidfile)
+        alive $pid
+        if [ $? -eq 0 ]; then
+          echo "  running $name"
+        else
+          start_proc $name "${CMDS[i]}"
+        fi
       else
-        echo "  starting $name"
-        mon -d -p $PIDS/$name.pid \
-          -m $PIDS/$name.mon.pid \
-          -l $LOGS/$name.log \
-          "${CMDS[i]}"
+        start_proc $name "${CMDS[i]}"
       fi
     fi
   done
