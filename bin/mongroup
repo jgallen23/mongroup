@@ -195,7 +195,7 @@ tail_log() {
   done
 
   if [[ "$arg" == "less" ]]; then
-    less ${log_files[@]}
+    less ${log_files[@]} -R
   else
     if [ "$arg" == "logf" -o "$arg" == "tail" ]; then
       follow="-f"
