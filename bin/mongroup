@@ -2,7 +2,7 @@
 
 VERSION="0.2.0"
 CONFIG=./mongroup.conf
-REPO=git://github.com/jgallen23/mongroup.git
+REPO=git://github.com/visionmedia/mongroup.git
 PIDS=./pids
 LOGS=./logs
 
