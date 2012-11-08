@@ -112,7 +112,6 @@ start_proc() {
 start() {
   read_config
   local app=$1
-  echo
   for i in ${!NAMES[@]}; do
     local name=${NAMES[i]}
     local pidfile=$PIDS/$name.pid
@@ -130,7 +129,6 @@ start() {
       fi
     fi
   done
-  echo
 }
 
 #
@@ -154,31 +152,12 @@ status() {
 }
 
 #
-# Restart processes.
-#
-
-restart() {
-  read_config
-  local app=$1
-  echo
-  for i in ${!NAMES[@]}; do
-    local name=${NAMES[i]}
-    if [ -z "$app" -o "$app" == "$name" ]; then
-      echo "  restarting $name"
-      kill -s SIGTERM $(cat $PIDS/$name.pid) 2> /dev/null
-    fi
-  done
-  echo
-}
-
-#
 # Stop processes.
 #
 
 stop() {
   read_config
   local app=$1
-  echo
   for i in ${!NAMES[@]}; do
     local name=${NAMES[i]}
     if [ -z "$app" -o "$app" == "$name" ]; then
@@ -186,7 +165,16 @@ stop() {
       kill -s SIGTERM $(cat $PIDS/$name.mon.pid) 2> /dev/null
     fi
   done
+}
+
+#
+# Restart processes.
+#
+
+restart() {
+  stop
   echo
+  start
 }
 
 #
@@ -260,7 +248,9 @@ while test $# -ne 0; do
       shift
       ;;
     start)
+      echo
       start $1
+      echo
       exit
       ;;
     status)
@@ -268,11 +258,15 @@ while test $# -ne 0; do
       exit
       ;;
     restart)
+      echo
       restart $1
+      echo
       exit
       ;;
     stop)
+      echo
       stop $1
+      echo
       exit
       ;;
     log|logf|less|tail)
