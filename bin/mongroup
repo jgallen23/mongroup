@@ -129,8 +129,13 @@ status() {
   echo
   for i in ${!NAMES[@]}; do
     local name=${NAMES[i]}
+    local pidfile=$PIDS/$name.pid
     printf "  %10s : " $name
-    echo `mon --pidfile $PIDS/$name.pid --status`
+    if [ -f $pidfile ]; then
+      echo `mon --pidfile $pidfile --status`
+    else
+      printf "\e[31mdead\e[m\n"
+    fi
   done
   echo
 }
