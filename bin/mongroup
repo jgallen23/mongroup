@@ -163,7 +163,7 @@ stop() {
     local name=${NAMES[i]}
     if [ -z "$app" -o "$app" == "$name" ]; then
       printf "  \e[36m%10s\e[m : %s\n" "stop" $name
-      kill -s SIGTERM $(cat $PIDS/$name.mon.pid) 2> /dev/null
+      kill -s SIGQUIT $(cat $PIDS/$name.mon.pid) 2> /dev/null
     fi
   done
 }
