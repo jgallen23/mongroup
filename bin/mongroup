@@ -2,8 +2,13 @@
 
 VERSION="0.2.0"
 CONFIG=./mongroup.conf
+REPO=git://github.com/visionmedia/mongroup.git
 PIDS=./pids
 LOGS=./logs
+
+#
+# Output usage.
+#
 
 usage() {
   cat <<-EOF
@@ -20,15 +25,27 @@ usage() {
 
     start [app]          start [app] or all apps
     restart [app]        restart [app] or all apps
-    stop [app]           stops [app] or all apps 
-    status               shows the status of all running apps 
-    log [app]            tail the [app]'s log or all apps 
-    logf [app]           tail -f the [app]'s log or all apps 
-    tail [app]           same as logf 
+    stop [app]           stops [app] or all apps
+    status               shows the status of all running apps
+    log [app]            tail the [app]'s log or all apps
+    tail [app]           tail -f the [app]'s log or all apps
     less [app]           runs the log files through less
     update               update mongroup to the latest version
+
 EOF
 }
+
+#
+# Check if <pid> is alive.
+#
+
+alive() {
+  kill -0 $1 2> /dev/null
+}
+
+#
+# Abort with <msg ...>
+#
 
 abort() {
   echo
@@ -37,9 +54,9 @@ abort() {
   exit 1
 }
 
-version() {
-  echo $VERSION
-}
+#
+# Read configuration file.
+#
 
 read_config() {
   i=0
@@ -57,64 +74,112 @@ read_config() {
       ((i++))
     fi
   fi
-  done < $CONFIG 
+  done < $CONFIG
+
   if [ ! -d $PIDS ]; then
-    abort pid directory doesn\'t exist
+    abort $PIDS directory doesn\'t exist
   fi
+
   if [ ! -d $LOGS ]; then
-    abort logs directory doesn\'t exist
+    abort $LOGS directory doesn\'t exist
   fi
 }
+
+#
+# Set config <file>
+#
 
 set_config() {
   test -f $1 || abort invalid --config path
   CONFIG=$1
 }
 
+#
+# Start proc <name> with <cmd>
+#
+
+start_proc() {
+  printf "  \e[36m%10s\e[m : %s\n" "start" $name
+  mon -d -p $PIDS/$1.pid \
+    -m $PIDS/$1.mon.pid \
+    -l $LOGS/$1.log \
+    "$2"
+}
+
+#
+# Start processes.
+#
 
 start() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}
-  do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "starting ${NAMES[i]} (${CMDS[i]})"
-      mon -d -p $PIDS/${NAMES[i]}.pid -m $PIDS/${NAMES[i]}.mon.pid -l $LOGS/${NAMES[i]}.log "${CMDS[i]}"
+  for i in ${!NAMES[@]}; do
+    local name=${NAMES[i]}
+    local pidfile=$PIDS/$name.pid
+    if [ -z "$app" -o "$app" == "$name" ]; then
+      if [ -f $pidfile ]; then
+        local pid=$(cat $pidfile)
+        alive $pid
+        if [ $? -eq 0 ]; then
+          printf "  \e[36m%10s\e[m : %s\n" "running" $name
+        else
+          start_proc $name "${CMDS[i]}"
+        fi
+      else
+        start_proc $name "${CMDS[i]}"
+      fi
     fi
   done
 }
+
+#
+# Check status.
+#
 
 status() {
   read_config
-  for i in ${!NAMES[@]}
-  do
-    echo ${NAMES[i]} `mon --pidfile $PIDS/${NAMES[i]}.pid --status`
-  done
-}
-
-restart() {
-  read_config
-  local app=$1
-  for i in ${!NAMES[@]}
-  do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "restarting ${NAMES[i]}"
-      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.pid)
+  echo
+  for i in ${!NAMES[@]}; do
+    local name=${NAMES[i]}
+    local pidfile=$PIDS/$name.pid
+    printf "  %10s : " $name
+    if [ -f $pidfile ]; then
+      echo `mon --pidfile $pidfile --status`
+    else
+      printf "\e[31mdead\e[m\n"
     fi
   done
+  echo
 }
+
+#
+# Stop processes.
+#
 
 stop() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}
-  do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      echo "stopping ${NAMES[i]}"
-      kill -s SIGTERM $(cat $PIDS/${NAMES[i]}.mon.pid)
+  for i in ${!NAMES[@]}; do
+    local name=${NAMES[i]}
+    if [ -z "$app" -o "$app" == "$name" ]; then
+      printf "  \e[36m%10s\e[m : %s\n" "stop" $name
+      kill -s SIGQUIT $(cat $PIDS/$name.mon.pid) 2> /dev/null
     fi
   done
 }
+
+#
+# Restart processes or [app].
+#
+
+restart() {
+  stop $1
+  start $1
+}
+
+#
+# Tail logs.
+#
 
 tail_log() {
   read_config
@@ -123,14 +188,14 @@ tail_log() {
   local log_files=
   local follow=
 
-  for i in ${!NAMES[@]}
-  do
+  for i in ${!NAMES[@]}; do
     if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
       log_files[i]="$LOGS/${NAMES[i]}.log"
     fi
   done
+
   if [[ "$arg" == "less" ]]; then
-    less ${log_files[@]}
+    less -R ${log_files[@]}
   else
     if [ "$arg" == "logf" -o "$arg" == "tail" ]; then
       follow="-f"
@@ -139,17 +204,32 @@ tail_log() {
   fi
 }
 
+#
+# Update mongroup(1)
+#
+
 update() {
   echo "updating mongroup(1)"
   rm -fr /tmp/mongroup
-  git clone git://github.com/jgallen23/mongroup.git \
-    --depth 0 \
-    /tmp/mongroup \
-    &> /tmp/mongroup.log \
-  && cd /tmp/mongroup \
-  && make install \
-  && echo "updated $VERSION -> `mongroup --version`"
+  git clone $REPO \
+      --depth 0 \
+      /tmp/mongroup \
+      &> /tmp/mongroup.log \
+    && cd /tmp/mongroup \
+    && make install \
+    && echo "updated $VERSION -> `mongroup --version`"
 }
+
+# default to status
+
+if [ $# -eq 0 ]; then
+  status
+  exit
+fi
+
+#
+# Parse argv.
+#
 
 while test $# -ne 0; do
   arg=$1
@@ -157,10 +237,10 @@ while test $# -ne 0; do
   case $arg in
     -h|--help)
       usage
-      exit 
+      exit
       ;;
     -V|--version)
-      version
+      echo $VERSION
       exit
       ;;
     -c|--config)
@@ -168,7 +248,9 @@ while test $# -ne 0; do
       shift
       ;;
     start)
+      echo
       start $1
+      echo
       exit
       ;;
     status)
@@ -176,11 +258,15 @@ while test $# -ne 0; do
       exit
       ;;
     restart)
+      echo
       restart $1
+      echo
       exit
       ;;
     stop)
+      echo
       stop $1
+      echo
       exit
       ;;
     log|logf|less|tail)
