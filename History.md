@@ -1,4 +1,34 @@
 
+0.3.0 / 2012-11-13 
+==================
+
+  * changed repo back
+  * Merge pull request #2 from visionmedia/master
+  * fix `restart NAME`. Closes #2
+  * change SIGTERM to SIGQUIT
+  * switch repos for now
+  * add trailing newline to -h output
+  * move -R
+  * add -R to less
+  * remove redundant command
+  * add $REPO
+  * change restart to be a combo of stop/start
+  * add nicer looking start / stop output
+  * fix stat() in start
+  * fix stat() failure when pidfile is not present
+  * add `status` default
+  * ws
+  * refactor
+  * refactor
+  * refactor
+  * refactor
+  * add prevention of multple starts
+  * remove redundant version function
+  * send kill output to /dev/null
+  * add padding for status output
+  * add some padding to output
+  * docs
+
 0.2.0 / 2012-05-14 
 ==================
 
