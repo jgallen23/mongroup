@@ -5,7 +5,7 @@ CONFIG=./mongroup.conf
 REPO=git://github.com/jgallen23/mongroup.git
 PIDS=./pids
 LOGS=./logs
-
+ERRORCMD=./on_error.sh
 #
 # Output usage.
 #
