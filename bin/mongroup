@@ -68,6 +68,8 @@ read_config() {
       PIDS=$v
     elif [[ "$n" == "logs" ]]; then
       LOGS=$v
+    elif [[ "$n" == "errorcmd" ]]; then
+      ERRORCMD=$v
     else
       NAMES[i]=$n
       CMDS[i]=$v
@@ -103,6 +105,7 @@ start_proc() {
   mon -d -p $PIDS/$1.pid \
     -m $PIDS/$1.mon.pid \
     -l $LOGS/$1.log \
+    --on-error "$ERRORCMD $name" \
     "$2"
 }
 
