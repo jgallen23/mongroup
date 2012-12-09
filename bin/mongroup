@@ -91,11 +91,24 @@ set_config() {
 
 start_proc() {
   printf "  \e[36m%10s\e[m : %s\n" "start" $name
-  mon -d -p $PIDS/$1.pid \
-    -m $PIDS/$1.mon.pid \
-    -l $LOGS/$1.log \
-    --on-error "$ERRORCMD $name" \
-    "$2"
+  mon_opts=(-d -p "$pid_dir/$1.pid"
+    -m "$pid_dir/$1.mon.pid"
+    -l "$log_dir/$1.log")
+
+  if [ -n "$attempts" -a "$attempts" != "" -a -f "$attempts" ]
+  then
+    mon_opts+=(--attempts "$attempts")
+  fi
+  if [ -n "$on_error" -a "$on_error" != "" -a -f "$on_error" ]
+  then
+    mon_opts+=(--on-error ""$on_error" "$name"")
+  fi
+  if [ -n "$on_restart" -a "$on_restart" != "" -a -f "$on_restart" ]
+  then
+    mon_opts+=(--on-restart ""$on_restart" "$name"")
+  fi
+  shift; mon_opts+=("${args[*]}")
+  mon "${mon_opts[@]}"
 }
 
 #
@@ -115,10 +128,10 @@ start() {
         if [ $? -eq 0 ]; then
           printf "  \e[36m%10s\e[m : %s\n" "running" $name
         else
-          start_proc $name "${CMDS[i]}"
+          start_proc $name "${args[@]}"
         fi
       else
-        start_proc $name "${CMDS[i]}"
+        start_proc "$name" "${args[@]}"
       fi
     fi
   done
