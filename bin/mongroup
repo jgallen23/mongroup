@@ -1,11 +1,10 @@
 #!/bin/bash
 
-VERSION="0.3.0"
-CONFIG=./mongroup.conf
-REPO=git://github.com/jgallen23/mongroup.git
-PIDS=./pids
-LOGS=./logs
-ERRORCMD=./on_error.sh
+version="0.3.0"
+config_file=./mongroup.conf
+repo=git://github.com/jgallen23/mongroup.git
+pid_dir=./pids
+log_dir=./logs
 #
 # Output usage.
 #
@@ -53,37 +52,27 @@ abort() {
   echo
   exit 1
 }
+# working: mon -p ./pids/web.pid -m ./pids/web.mon.pid -l ./logs/web.log --on-error "./on_error.sh web" "node server.js 8001"
+# not working: mon -p ./pids/web.pid -m ./pids/web.mon.pid -l ./logs/web.log --on-error ./on_error.sh web node server.js 8001
+# double quotations needed!
 
-#
+
+
 # Read configuration file.
 #
 
 read_config() {
-  i=0
-  while read line; do
-  if [[ "$line" =~ ^[^#]*= ]]; then
-    n=${line%% =*}
-    v=${line##*= }
-    if [[ "$n" == "pids" ]]; then
-      PIDS=$v
-    elif [[ "$n" == "logs" ]]; then
-      LOGS=$v
-    elif [[ "$n" == "errorcmd" ]]; then
-      ERRORCMD=$v
-    else
-      NAMES[i]=$n
-      CMDS[i]=$v
-      ((i++))
-    fi
+  if [ ! -f $config_file ]; then
+    abort $config_file doesn\'t exist
   fi
-  done < $CONFIG
-
-  if [ ! -d $PIDS ]; then
-    abort $PIDS directory doesn\'t exist
+  . $config_file
+  
+  if [ ! -d $pid_dir ]; then
+    abort $pid_dir directory doesn\'t exist
   fi
 
-  if [ ! -d $LOGS ]; then
-    abort $LOGS directory doesn\'t exist
+  if [ ! -d $log_dir ]; then
+    abort $log_dir directory doesn\'t exist
   fi
 }
 
@@ -93,7 +82,7 @@ read_config() {
 
 set_config() {
   test -f $1 || abort invalid --config path
-  CONFIG=$1
+  config_file=$1
 }
 
 #
@@ -116,8 +105,8 @@ start_proc() {
 start() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}; do
-    local name=${NAMES[i]}
+  for name in "${processes[@]}"; do
+    ref=$name[@]; args=( "${!ref}" );
     local pidfile=$PIDS/$name.pid
     if [ -z "$app" -o "$app" == "$name" ]; then
       if [ -f $pidfile ]; then
@@ -142,9 +131,9 @@ start() {
 status() {
   read_config
   echo
-  for i in ${!NAMES[@]}; do
-    local name=${NAMES[i]}
-    local pidfile=$PIDS/$name.pid
+  for name in "${processes[@]}"; do
+    ref=$name[@]; args=( "${!ref}" );
+    local pidfile=$pid_dir/$name.pid
     printf "  %10s : " $name
     if [ -f $pidfile ]; then
       echo `mon --pidfile $pidfile --status`
@@ -162,11 +151,11 @@ status() {
 stop() {
   read_config
   local app=$1
-  for i in ${!NAMES[@]}; do
-    local name=${NAMES[i]}
+  for name in "${processes[@]}"; do
+    ref=$name[@]; args=( "${!ref}" );
     if [ -z "$app" -o "$app" == "$name" ]; then
       printf "  \e[36m%10s\e[m : %s\n" "stop" $name
-      kill -s SIGQUIT $(cat $PIDS/$name.mon.pid) 2> /dev/null
+      kill -s SIGQUIT $(cat $pid_dir/$name.mon.pid) 2> /dev/null
     fi
   done
 }
@@ -191,9 +180,10 @@ tail_log() {
   local log_files=
   local follow=
 
-  for i in ${!NAMES[@]}; do
-    if [ -z "$app" -o "$app" == "${NAMES[i]}" ]; then
-      log_files[i]="$LOGS/${NAMES[i]}.log"
+  for name in "${processes[@]}"; do
+    ref=$name[@]; args=( "${!ref}" );
+    if [ -z "$app" -o "$app" == "$name" ]; then
+      log_files[i]="$log_dir/$name.log"
     fi
   done
 
