@@ -217,13 +217,13 @@ tail_log() {
 update() {
   echo "updating mongroup(1)"
   rm -fr /tmp/mongroup
-  git clone $REPO \
+  git clone $repo \
       --depth 0 \
       /tmp/mongroup \
       &> /tmp/mongroup.log \
     && cd /tmp/mongroup \
     && make install \
-    && echo "updated $VERSION -> `mongroup --version`"
+    && echo "updated $version -> `mongroup --version`"
 }
 
 # default to status
