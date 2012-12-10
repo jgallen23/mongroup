@@ -52,31 +52,7 @@ abort() {
   echo
   exit 1
 }
-# working: mon -p ./pids/web.pid -m ./pids/web.mon.pid -l ./logs/web.log --on-error "./on_error.sh web" "node server.js 8001"
-# not working: mon -p ./pids/web.pid -m ./pids/web.mon.pid -l ./logs/web.log --on-error ./on_error.sh web node server.js 8001
-# double quotations needed!
 
-
-
-# Read configuration file.
-#
-
-read_config() {
-  if [ ! -f $config_file ]; then
-    abort $config_file doesn\'t exist
-  fi
-  . $config_file
-  
-  if [ ! -d $pid_dir ]; then
-    abort $pid_dir directory doesn\'t exist
-  fi
-
-  if [ ! -d $log_dir ]; then
-    abort $log_dir directory doesn\'t exist
-  fi
-}
-
-#
 # Set config <file>
 #
 
@@ -226,9 +202,30 @@ update() {
     && echo "updated $version -> `mongroup --version`"
 }
 
+load_config() {
+  # check if the config file exists.
+  if [ ! -f $config_file ]; then
+    abort $config_file doesn\'t exist
+  fi
+  # source the config file.
+  . $config_file
+
+  # check if the pid directory is a valid directory.
+  if [ ! -d $pid_dir ]; then
+    abort $pid_dir directory doesn\'t exist
+  fi
+
+  # check if the log directory is a valid directory.
+  if [ ! -d $log_dir ]; then
+    abort $log_dir directory doesn\'t exist
+  fi
+}
+# load the config first, reload it later if someone sets --cofig
+load_config
+
 # default to status
 
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
   status
   exit
 fi
@@ -246,11 +243,12 @@ while test $# -ne 0; do
       exit
       ;;
     -V|--version)
-      echo $VERSION
+      echo $version
       exit
       ;;
     -c|--config)
       set_config $1
+      load_config
       shift
       ;;
     start)
