@@ -3,7 +3,7 @@
 # $2 is the PID
 SUBJECT="ALERT PROCESS $1 DOWN"
 # Email To ?
-EMAIL="<your email here>"
+EMAIL="<your email>"
 # Email text/message
 EMAILMESSAGE="/tmp/emailmessage.txt"
 # Your message here, or whatever you would like.
