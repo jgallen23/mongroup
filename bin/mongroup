@@ -71,16 +71,16 @@ start_proc() {
     -m "$pid_dir/$1.mon.pid"
     -l "$log_dir/$1.log")
 
-  if [ -n "$attempts" -a "$attempts" != "" -a -f "$attempts" ]
-  then
+  # if $attempts is not empty and is a number.  
+  if [[ -n $attempts && $attempts != *[!0-9]* ]] ; then
     mon_opts+=(--attempts "$attempts")
   fi
-  if [ -n "$on_error" -a "$on_error" != "" -a -f "$on_error" ]
-  then
+  # if $on_error is not empty and is a regular file.
+  if [[ -n $on_error && -f $on_error ]] ; then
     mon_opts+=(--on-error ""$on_error" "$name"")
   fi
-  if [ -n "$on_restart" -a "$on_restart" != "" -a -f "$on_restart" ]
-  then
+  # if $on_error is not empty and is a regular file.
+  if [[ -n $on_restart && -f $on_restart ]] ; then
     mon_opts+=(--on-restart ""$on_restart" "$name"")
   fi
   shift; mon_opts+=("${args[*]}")
@@ -92,22 +92,28 @@ start_proc() {
 #
 
 start() {
-  read_config
   local app=$1
+  # loop all processes loaded from config file.
   for name in "${processes[@]}"; do
     ref=$name[@]; args=( "${!ref}" );
     local pidfile=$PIDS/$name.pid
-    if [ -z "$app" -o "$app" == "$name" ]; then
-      if [ -f $pidfile ]; then
-        local pid=$(cat $pidfile)
+    # $app is empty or $name is the process we want ($app)
+    if [[ -z $app ||  $app == $name ]]; then
+      # if the pid file is a regular file
+      if [[ -f $pidfile ]]; then
+        local pid=$(cat $pidfile) # read the pid
+        # check if process is alive.
         alive $pid
-        if [ $? -eq 0 ]; then
+        # exitcode of alive is 0 means the process is not running.
+        if [[ $? -eq 0 ]]; then
           printf "  \e[36m%10s\e[m : %s\n" "running" $name
         else
+        # process is not running, start it up.
           start_proc $name "${args[@]}"
         fi
       else
-        start_proc "$name" "${args[@]}"
+        # pid file did not exist (the process can't be running), start it up.
+        start_proc $name "${args[@]}"
       fi
     fi
   done
@@ -118,13 +124,12 @@ start() {
 #
 
 status() {
-  read_config
   echo
   for name in "${processes[@]}"; do
     ref=$name[@]; args=( "${!ref}" );
     local pidfile=$pid_dir/$name.pid
     printf "  %10s : " $name
-    if [ -f $pidfile ]; then
+    if [[ -f $pidfile ]]; then
       echo `mon --pidfile $pidfile --status`
     else
       printf "\e[31mdead\e[m\n"
@@ -138,11 +143,10 @@ status() {
 #
 
 stop() {
-  read_config
   local app=$1
   for name in "${processes[@]}"; do
     ref=$name[@]; args=( "${!ref}" );
-    if [ -z "$app" -o "$app" == "$name" ]; then
+    if [[ -z $app || $app == $name ]]; then
       printf "  \e[36m%10s\e[m : %s\n" "stop" $name
       kill -s SIGQUIT $(cat $pid_dir/$name.mon.pid) 2> /dev/null
     fi
@@ -163,7 +167,6 @@ restart() {
 #
 
 tail_log() {
-  read_config
   local app=$2
   local arg=$1
   local log_files=
@@ -171,15 +174,15 @@ tail_log() {
 
   for name in "${processes[@]}"; do
     ref=$name[@]; args=( "${!ref}" );
-    if [ -z "$app" -o "$app" == "$name" ]; then
+    if [[ -z $app || $app == $name ]]; then
       log_files[i]="$log_dir/$name.log"
     fi
   done
 
-  if [[ "$arg" == "less" ]]; then
+  if [[ $arg == "less" ]]; then
     less -R ${log_files[@]}
   else
-    if [ "$arg" == "logf" -o "$arg" == "tail" ]; then
+    if [[ $arg == "logf" || $arg == "tail" ]]; then
       follow="-f"
     fi
     tail -n 30 $follow ${log_files[@]}
