@@ -145,6 +145,10 @@ status() {
   echo
 }
 
+stop_proc() {
+  printf "  \e[36m%10s\e[m : %s\n" "stop" $2
+  kill -s SIGQUIT $1 2> /dev/null
+}
 #
 # Stop a single process.
 #
@@ -161,11 +165,13 @@ stop() {
         
         if [[ ! $? -eq 0 ]]; then
           printf "  %s : \e[36m%10s\e[m\n" $name "not running"
-          continue # We are done for this process, do the next.
+          break # We are done for this process, do the next.
+        else
+          stop_proc $pid $name 
         fi
+      else 
+        stop_proc $pid $name
       fi
-      printf "  \e[36m%10s\e[m : %s\n" "stop" $name
-      kill -s SIGQUIT $(cat $pid_dir/$name.mon.pid) 2> /dev/null
     fi
   done
 }
