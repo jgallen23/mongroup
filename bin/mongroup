@@ -258,8 +258,6 @@ update() {
     && make install \
     && echo "updated $version -> `mongroup --version`"
 }
-# load the config first, reload it later if someone sets --cofig
-load_config
 
 load_config() {
   # check if the config file exists.
