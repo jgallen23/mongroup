@@ -213,8 +213,9 @@ handle_restart() {
   for target in ""$@""; do
     for name in "${processes[@]}"; do
       if [[ -z $1 || $target == $name ]]; then
-        stop $name
-        start $name
+        local target=$name
+        stop $target
+        start $target
       fi
     done
   done
