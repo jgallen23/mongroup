@@ -158,6 +158,7 @@ stop() {
   for name in "${processes[@]}"; do
     if [[ -z $app || $app == $name ]]; then
       local pidfile=$pid_dir/$name.pid
+      local monpid=$(cat $pid_dir/$name.mon.pid)
       if [[ -f $pidfile ]]; then
         local pid=$(cat $pidfile) # read the pid
         # check if process is alive.
@@ -167,10 +168,10 @@ stop() {
           printf "  %s : \e[36m%10s\e[m\n" $name "not running"
           break # We are done for this process, do the next.
         else
-          stop_proc $pid $name 
+          stop_proc $monpid $name 
         fi
       else 
-        stop_proc $pid $name
+        stop_proc $monpid $name
       fi
     fi
   done
