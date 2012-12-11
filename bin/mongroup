@@ -94,7 +94,7 @@ start_proc() {
 }
 
 #
-# Start processes.
+# Start a single process.
 #
 
 start() {
@@ -102,23 +102,24 @@ start() {
   # loop all processes loaded from config file.
   for name in "${processes[@]}"; do
     ref=$name[@]; args=( "${!ref}" );
-    local pidfile=$PIDS/$name.pid
+    local pidfile=$pid_dir/$name.pid
     # $app is empty or $name is the process we want ($app)
     if [[ -z $app ||  $app == $name ]]; then
-      # if the pid file is a regular file
-      if [[ -f $pidfile ]]; then
+      # if the pid file exists.
+      if [[ -e $pidfile ]]; then
         local pid=$(cat $pidfile) # read the pid
         # check if process is alive.
         alive $pid
         # exitcode of alive is 0 means the process is not running.
         if [[ $? -eq 0 ]]; then
-          printf "  \e[36m%10s\e[m : %s\n" "running" $name
+          printf "  \e[36m%10s\e[m : %s\n" "already running" $name
+          break
         else
-        # process is not running, start it up.
+          # The process is dead! Restart it!
           start_proc $name "${args[@]}"
         fi
       else
-        # pid file did not exist (the process can't be running), start it up.
+        # process is not running, start it up.
         start_proc $name "${args[@]}"
       fi
     fi
@@ -145,14 +146,24 @@ status() {
 }
 
 #
-# Stop processes.
+# Stop a single process.
 #
 
 stop() {
   local app=$1
   for name in "${processes[@]}"; do
-    ref=$name[@]; args=( "${!ref}" );
     if [[ -z $app || $app == $name ]]; then
+      local pidfile=$pid_dir/$name.pid
+      if [[ -f $pidfile ]]; then
+        local pid=$(cat $pidfile) # read the pid
+        # check if process is alive.
+        alive $pid
+        
+        if [[ ! $? -eq 0 ]]; then
+          printf "  %s : \e[36m%10s\e[m\n" $name "not running"
+          continue # We are done for this process, do the next.
+        fi
+      fi
       printf "  \e[36m%10s\e[m : %s\n" "stop" $name
       kill -s SIGQUIT $(cat $pid_dir/$name.mon.pid) 2> /dev/null
     fi
@@ -160,12 +171,46 @@ stop() {
 }
 
 #
-# Restart processes or [app].
+# Handle starting processes.
 #
 
-restart() {
-  stop $1
-  start $1
+handle_start() {
+  for target in ""$@""; do
+    for name in "${processes[@]}"; do
+      if [[ -z $1 || $target == $name ]]; then
+        start $name
+      fi
+    done
+  done
+}
+
+#
+# Handle stopping processes.
+#
+
+handle_stop() {
+  for target in ""$@""; do
+    for name in "${processes[@]}"; do
+      if [[ -z $1 || $target == $name ]]; then
+        stop $name
+      fi
+    done
+  done
+}
+
+#
+# Handle restarting processes.
+#
+
+handle_restart() {
+  for target in ""$@""; do
+    for name in "${processes[@]}"; do
+      if [[ -z $1 || $target == $name ]]; then
+        stop $name
+        start $name
+      fi
+    done
+  done
 }
 
 #
@@ -173,16 +218,19 @@ restart() {
 #
 
 tail_log() {
-  local app=$2
   local arg=$1
-  local log_files=
+  shift
+  local log_files=()
   local follow=
 
-  for name in "${processes[@]}"; do
-    ref=$name[@]; args=( "${!ref}" );
-    if [[ -z $app || $app == $name ]]; then
-      log_files[i]="$log_dir/$name.log"
-    fi
+  for target in ""$@""; do
+    for name in "${processes[@]}"; do
+      if [[ -z $1 || $target == $name ]]; then
+        if [[ -z $app || $app == $name ]]; then
+          log_files+=("$log_dir/$name.log")
+        fi
+      fi
+    done
   done
 
   if [[ $arg == "less" ]]; then
@@ -276,18 +324,18 @@ while test $# -ne 0; do
       ;;
     restart)
       echo
-      restart $1
+      handle_restart $@
       echo
       exit
       ;;
     stop)
       echo
-      stop $1
+      handle_stop $@
       echo
       exit
       ;;
     log|logf|less|tail)
-      tail_log $arg $1
+      tail_log $arg $@
       exit
       ;;
     update)
