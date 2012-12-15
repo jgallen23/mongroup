@@ -1,6 +1,6 @@
 #mongroup
 
-mongroup is a wrapper for [mon](https://github.com/visionmedia/mon/).  It allows you to create easily monitor a group of processes.
+mongroup is a wrapper for [mon](https://github.com/visionmedia/mon/).  It allows you to easily monitor a group of processes.
 
 ##Installation
 
