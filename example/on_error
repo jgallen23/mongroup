@@ -10,4 +10,3 @@ EMAILMESSAGE="/tmp/emailmessage.txt"
 echo "process $1:$2 died a horrible death :("> $EMAILMESSAGE
 # send an email using /bin/mail
 /usr/bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
-
