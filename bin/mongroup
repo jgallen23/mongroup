@@ -5,6 +5,8 @@ CONFIG=./mongroup.conf
 REPO=git://github.com/jgallen23/mongroup.git
 PIDS=./pids
 LOGS=./logs
+ON_RESTART=./restart.sh
+ON_ERROR=./error.sh
 
 #
 # Output usage.
@@ -68,6 +70,10 @@ read_config() {
       PIDS=$v
     elif [[ "$n" == "logs" ]]; then
       LOGS=$v
+    elif [[ "$n" == "on-restart" ]]; then
+      ON_RESTART=$v
+    elif [[ "$n" == "on-error" ]]; then
+      ON_ERROR=$v
     else
       NAMES[i]=$n
       CMDS[i]=$v
@@ -103,6 +109,8 @@ start_proc() {
   mon -d -p $PIDS/$1.pid \
     -m $PIDS/$1.mon.pid \
     -l $LOGS/$1.log \
+    --on-error "$ON_ERROR $name" \
+    --on-restart "$ON_RESTART $name" \
     "$2"
 }
 
