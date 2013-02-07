@@ -1,4 +1,14 @@
 
+0.4.0 / 2013-02-07 
+==================
+
+  * added TEST=1 to example to verify that it will pass through
+  * added delay on restart
+  * Merge pull request #9 from MatthewMueller/patch-1
+  * added one-liner (like mon)
+  * Merge pull request #8 from visionmedia/master
+  * add alert support
+
 0.3.0 / 2012-11-13 
 ==================
 
