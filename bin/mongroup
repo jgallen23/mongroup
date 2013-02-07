@@ -182,6 +182,7 @@ stop() {
 
 restart() {
   stop $1
+  sleep 1
   start $1
 }
 
