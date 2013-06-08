@@ -231,7 +231,11 @@ update() {
 
 # default to status
 
-if [ $# -eq 0 ]; then
+if [ $# -eq 0 ] || [ $# -eq 2 ]; then
+  # optional config, but no status command
+  if [ $# -eq 2 ]; then 
+    set_config $2
+  fi
   status
   exit
 fi
