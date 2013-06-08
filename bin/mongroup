@@ -2,7 +2,7 @@
 
 VERSION="0.4.0"
 CONFIG=./mongroup.conf
-REPO=git://github.com/jgallen23/mongroup.git
+REPO=git://github.com/Ensequence/mongroup.git
 PIDS=./pids
 LOGS=./logs
 ON_RESTART=./restart.sh
@@ -230,11 +230,18 @@ update() {
 }
 
 # default to status
-
 if [ $# -eq 0 ]; then
-  status
+  status 
   exit
 fi
+
+# optional config, but no status command
+if [ $# -eq 2 ]; then
+  set_config $2
+  status 
+  exit
+fi
+
 
 #
 # Parse argv.
