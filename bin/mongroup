@@ -86,8 +86,16 @@ read_config() {
     abort $PIDS directory doesn\'t exist
   fi
 
+  if [ ! -w $PIDS ]; then
+    abort $PIDS directory is not writable
+  fi
+
   if [ ! -d $LOGS ]; then
     abort $LOGS directory doesn\'t exist
+  fi
+
+  if [ ! -w $LOGS ]; then
+    abort $LOGS directory is not writable
   fi
 }
 
