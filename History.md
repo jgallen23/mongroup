@@ -1,4 +1,10 @@
 
+0.4.1 / 2014-01-21 
+==================
+
+  * fixes #16, adding support for the default status command while specifying config file location
+  * Ensure $PIDS and $LOGS directories are writable
+
 0.4.0 / 2013-02-07 
 ==================
 
